@@ -217,11 +217,9 @@ export default class CenaJogo extends Phaser.Scene {
       if (i.x < limiteRemocao) i.destroy();
     });
 
-    // Verifica se jogador ficou para trás
     if (this.jogador.x < this.cameras.main.scrollX - 20) {
-      this.jogador.perderVida();
-      this.textoVidas.setText(`Vidas: ${this.jogador.vidas}`);
-      this.jogador.x = this.cameras.main.scrollX + 100;
+      this.jogador.vidas = 0;
+      this.jogador.onMorte();
     }
   }
 }

@@ -14,7 +14,7 @@ export default class Jogador extends Phaser.Physics.Arcade.Sprite {
     this.teclas = scene.input.keyboard.createCursorKeys();
     this.teclaAtaque = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
 
-    this.vidas = 3;
+    this.vidas = 2;
     this.invulneravel = false;
 
     this.onMorte = () => {};
@@ -41,8 +41,6 @@ export default class Jogador extends Phaser.Physics.Arcade.Sprite {
         this.clearTint();
         this.invulneravel = false;
       });
-
-      this.setPosition(100, this.scene.scale.height - 100);
     }
   }
 
