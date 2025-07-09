@@ -87,7 +87,7 @@ export default class Jogador extends Phaser.Physics.Arcade.Sprite {
       }
 
       if (this.teclas.up.isDown && onGround) {
-        this.setVelocityY(-510);
+        this.setVelocityY(-550);
         this.anims.play('jump', true);
       }
 

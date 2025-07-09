@@ -10,8 +10,7 @@ export default class CenaJogo extends Phaser.Scene {
     this.probabilidadeInimigo = 0.6;
     this.ultimoXInimigo = 800;
     this.ultimoXPlataforma = 0;
-
-    this.velocidadeCamera = 0.75; 
+    this.velocidadeCamera = 0.75;
   }
 
   preload() {
@@ -68,7 +67,13 @@ export default class CenaJogo extends Phaser.Scene {
 
     // Jogador
     this.jogador = new Jogador(this, 100, altura - 100);
-    this.jogador.onMorte = () => this.scene.restart();
+
+    this.jogador.onMorte = () => {
+      this.scene.start('CenaFim', {
+        moedas: this.moedasRecolhidas,
+        pontuacao: this.pontuacao
+      });
+    };
 
     // UI
     this.textoVidas = this.add.text(16, 16, `Vidas: ${this.jogador.vidas}`, { fontSize: '20px', fill: '#ffffff' }).setScrollFactor(0);
@@ -95,8 +100,9 @@ export default class CenaJogo extends Phaser.Scene {
       } else {
         jogador.perderVida();
         this.textoVidas.setText(`Vidas: ${jogador.vidas}`);
+        if (jogador.vidas <= 0) jogador.onMorte();
       }
-    }, null, this);
+    });
 
     this.physics.add.overlap(this.hitboxes, this.inimigos, (hitbox, inimigo) => {
       inimigo.destroy();
@@ -111,22 +117,20 @@ export default class CenaJogo extends Phaser.Scene {
       this.textoMoedas.setText(`Moedas: ${this.moedasRecolhidas}`);
     });
 
-    // Câmera fixa
     this.physics.world.setBounds(0, 0, Number.MAX_SAFE_INTEGER, altura);
     this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, altura);
 
-    // Aumento de velocidade
+    // Aumentar velocidade ao longo do tempo
     this.time.addEvent({
       delay: this.intervaloAumento,
       loop: true,
       callback: () => {
         this.jogador.velocidade += 42;
         this.velocidadeCamera += 0.35;
-        console.log('Velocidade da câmara agora é:', this.velocidadeCamera);
       }
     });
 
-    // Tempo vivo = pontos
+    // Pontos por sobrevivência
     this.time.addEvent({
       delay: 1000,
       loop: true,
@@ -136,7 +140,7 @@ export default class CenaJogo extends Phaser.Scene {
       }
     });
 
-    // Spawn infinito de inimigos
+    // Spawn contínuo de inimigos
     this.time.addEvent({
       delay: 1000,
       loop: true,
@@ -145,10 +149,15 @@ export default class CenaJogo extends Phaser.Scene {
         const limiteX = cameraX + this.scale.width * 2;
 
         while (this.ultimoXInimigo < limiteX) {
-          if (Math.random() < this.probabilidadeInimigo) {
+          const chance = Math.random();
+          if (chance < this.probabilidadeInimigo) {
             const y = altura - 100;
             const inimigo = new Inimigo(this, this.ultimoXInimigo, y);
             this.inimigos.add(inimigo);
+          } else if (chance < this.probabilidadeInimigo + 0.18) {
+            const y = altura - 100;
+            const moeda = new Moeda(this, this.ultimoXInimigo, y);
+            this.moedas.add(moeda);
           }
           this.ultimoXInimigo += this.distanciaSpawn;
         }
@@ -160,7 +169,7 @@ export default class CenaJogo extends Phaser.Scene {
     this.jogador.update();
     this.inimigos.children.iterate(i => i?.update());
 
-    // Câmera anda sozinha
+    // Câmara
     this.cameras.main.scrollX += this.velocidadeCamera;
 
     const cameraX = this.cameras.main.scrollX;
@@ -180,7 +189,7 @@ export default class CenaJogo extends Phaser.Scene {
     // Gerar plataformas
     while (this.ultimoXPlataforma < limiteX) {
       const x = this.ultimoXPlataforma + Phaser.Math.Between(250, 350);
-      const y = Phaser.Math.Between(this.scale.height * 0.6, this.scale.height * 0.8);
+      const y = Phaser.Math.Between(this.scale.height * 0.4, this.scale.height * 0.85);
 
       const plataforma = this.add.rectangle(x, y, 150, 20, 0x5b3a29);
       this.physics.add.existing(plataforma, true);
@@ -199,7 +208,7 @@ export default class CenaJogo extends Phaser.Scene {
       this.ultimoXPlataforma = x;
     }
 
-    // Limpeza
+    // Limpar elementos fora do ecrã
     const limiteRemocao = cameraX - 1000;
     this.plataformasVisuais = this.plataformasVisuais.filter(p => {
       if (p.x < limiteRemocao) {
@@ -217,6 +226,7 @@ export default class CenaJogo extends Phaser.Scene {
       if (i.x < limiteRemocao) i.destroy();
     });
 
+    // Jogador fora da câmara = derrota
     if (this.jogador.x < this.cameras.main.scrollX - 20) {
       this.jogador.vidas = 0;
       this.jogador.onMorte();
