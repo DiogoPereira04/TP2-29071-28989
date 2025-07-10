@@ -18,7 +18,6 @@ export default class CenaFim extends Phaser.Scene {
     const largura = this.scale.width;
     const altura = this.scale.height;
 
-    // Fundo infinito animado
     this.bgKeys = ['bg1', 'bg3', 'bg4'];
     this.backgrounds = [];
 
@@ -26,8 +25,7 @@ export default class CenaFim extends Phaser.Scene {
       const bg = this.add.image(i * largura, 0, this.bgKeys[i % this.bgKeys.length])
         .setOrigin(0)
         .setDepth(-10)
-        .setScrollFactor(0); // <- fixo à câmara
-
+        .setScrollFactor(0);
       bg.displayWidth = largura;
       bg.displayHeight = altura;
       this.backgrounds.push(bg);
@@ -35,37 +33,75 @@ export default class CenaFim extends Phaser.Scene {
 
     this.bgVelocidade = 0.5;
 
-    // Texto central fixo
-    this.add.text(largura / 2, 100, 'Game Over', {
+    this.add.text(largura / 2, 100, '💀 GAME OVER 💀', {
       fontSize: '48px',
-      fill: '#ffffff'
+      fill: '#ff0000',
+      fontFamily: 'Arial Black',
+      stroke: '#000000',
+      strokeThickness: 6
     }).setOrigin(0.5).setScrollFactor(0);
 
-    this.add.text(largura / 2, 200, `Moedas Recolhidas: ${this.moedas}`, {
+    this.add.text(largura / 2, 200, `🪙 Moedas Recolhidas: ${this.moedas}`, {
       fontSize: '28px',
-      fill: '#ffff00'
+      fill: '#ffff00',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5).setScrollFactor(0);
 
-    this.add.text(largura / 2, 250, `Pontuação Final: ${this.pontuacao}`, {
+    this.add.text(largura / 2, 250, `⭐ Pontuação Final: ${this.pontuacao}`, {
       fontSize: '28px',
-      fill: '#00ffff'
+      fill: '#00ffff',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5).setScrollFactor(0);
 
-    this.add.text(largura / 2, 350, 'Pressiona qualquer tecla para voltar ao menu', {
+    // Guardar e mostrar highscore
+    const pontuacaoAnterior = localStorage.getItem('highscore') || 0;
+    this.highscore = Math.max(this.pontuacao, pontuacaoAnterior);
+    localStorage.setItem('highscore', this.highscore);
+
+    this.add.text(largura / 2, 290, `🏆 Melhor Pontuação: ${this.highscore}`, {
+      fontSize: '24px',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setScrollFactor(0);
+
+    this.add.text(largura / 2, 320, 'Pressiona ESPAÇO ou clica no botão abaixo', {
       fontSize: '20px',
-      fill: '#ffffff'
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5).setScrollFactor(0);
 
-    // Input
-    this.input.keyboard.once('keydown', () => {
+    // Botão voltar ao menu
+    const botaoMenu = this.add.text(largura / 2, 400, '↩ VOLTAR AO MENU', {
+      fontSize: '28px',
+      fill: '#ffff00',
+      backgroundColor: '#000000',
+      padding: { x: 20, y: 10 },
+      fontFamily: 'Arial Black'
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    botaoMenu.on('pointerover', () => {
+      botaoMenu.setStyle({ fill: '#ffffff' });
+    });
+
+    botaoMenu.on('pointerout', () => {
+      botaoMenu.setStyle({ fill: '#ffff00' });
+    });
+
+    botaoMenu.on('pointerdown', () => {
+      this.scene.start('CenaMenu');
+    });
+
+    this.input.keyboard.once('keydown-SPACE', () => {
       this.scene.start('CenaMenu');
     });
   }
 
   update() {
     const largura = this.scale.width;
-
-    // Fundo infinito animado
     this.backgrounds.forEach(bg => {
       bg.x -= this.bgVelocidade;
       if (bg.x + largura < 0) {
@@ -76,4 +112,4 @@ export default class CenaFim extends Phaser.Scene {
       }
     });
   }
-}
+}    
