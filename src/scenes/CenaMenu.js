@@ -29,7 +29,7 @@ export default class CenaMenu extends Phaser.Scene {
 
     this.scrollSpeed = 0.3;
 
-    this.add.text(largura / 2, altura / 4, '🏃 Corrida Infinita', {
+    this.add.text(largura / 2, altura / 4, '🏃 GOLD RUNNER 🪙', {
       fontSize: '48px',
       fill: '#ffffff',
       fontFamily: 'Arial Black',
